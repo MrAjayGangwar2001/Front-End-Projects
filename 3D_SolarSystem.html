@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Solar System with Real Textures</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #000;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    #info {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 250px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 14px;
+      z-index: 100;
+    }
+
+    #controls {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px;
+      border-radius: 5px;
+      z-index: 100;
+    }
+
+    button {
+      background: #333;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      margin: 0 5px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #555;
+    }
+
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      color: white;
+      z-index: 100;
+      text-align: center;
+      transition: opacity 0.5s;
+    }
+
+    #loading-progress {
+      width: 200px;
+      height: 10px;
+      background: #333;
+      margin: 20px auto;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    #loading-bar {
+      height: 100%;
+      width: 0%;
+      background: #4CAF50;
+      transition: width 0.3s;
+    }
+
+    #loading-text {
+      margin-top: 10px;
+    }
+
+    #texture-notice {
+      position: absolute;
+      bottom: 60px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      z-index: 100;
+      max-width: 250px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="loading">
+    <div>Loading the universe...</div>
+    <div id="loading-progress">
+      <div id="loading-bar"></div>
+    </div>
+    <div id="loading-text">0%</div>
+  </div>
+  <div id="info">
+    <h2>Solar System Simulation</h2>
+    <p id="planet-info"></p>
+  </div>
+  <div id="controls">
+    <button id="speed-slow">Slow</button>
+    <button id="speed-normal">Normal</button>
+    <button id="speed-fast">Fast</button>
+    <button id="speed-lightning">Lightning Speed</button>
+  </div>
+  <div id="texture-notice">
+    Some textures may take a moment to load. Colors will appear first.
+  </div>
+
+  <!-- Three.js library -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+
+  <script>
+    // Main variables
+    let scene, camera, renderer, controls;
+    let planets = [];
+    let timeSpeed = 1;
+    let clock = new THREE.Clock();
+    let raycaster = new THREE.Raycaster();
+    let mouse = new THREE.Vector2();
+    let hoveredObject = null;
+    let assetsLoaded = 0;
+    let totalAssets = 0;
+    const textureLoader = new THREE.TextureLoader();
+
+    // Planet data with reliable texture sources
+    const planetData = [
+      {
+        name: "Sun",
+        radius: 11.96,
+        distance: 0,
+        color: 0xffff00,
+        texture: 'https://assets.codepen.io/127738/sun_texture.jpg',
+        bumpMap: null,
+        bumpScale: 0.05,
+        specularMap: null,
+        specular: new THREE.Color(0x333333),
+        rotationSpeed: 0.02,
+        emissive: true,
+        emissiveIntensity: 1.5,
+        emissiveColor: 0xffff00,
+        light: true
+      },
+      {
+        name: "Mercury",
+        radius: 1.24,
+        distance: 15.8,
+        color: 0xaaaaaa,
+        texture: 'https://assets.codepen.io/127738/mercury_texture.jpg',
+        bumpMap: 'https://assets.codepen.io/127738/mercury_bump.jpg',
+        bumpScale: 0.1,
+        specularMap: null,
+        specular: new THREE.Color(0x111111),
+        orbitSpeed: 0.04,
+        rotationSpeed: 0.004
+      },
+      {
+        name: "Venus",
+        radius: 3.00,
+        distance: 20.8,
+        color: 0xffaa66,
+        texture: 'https://assets.codepen.io/127738/venus_texture.jpg',
+        bumpMap: null,
+        bumpScale: 0.05,
+        specularMap: null,
+        specular: new THREE.Color(0x222222),
+        orbitSpeed: 0.015,
+        rotationSpeed: 0.002,
+        atmosphere: true
+      },
+      {
+        name: "Earth",
+        radius: 3.15,
+        distance: 25,
+        color: 0x3366ff,
+        texture: 'https://assets.codepen.io/127738/earth_texture.jpg',
+        bumpMap: 'https://assets.codepen.io/127738/earth_bump.jpg',
+        bumpScale: 0.05,
+        specularMap: 'https://assets.codepen.io/127738/earth_specular.png',
+        specular: new THREE.Color(0x111111),
+        orbitSpeed: 0.01,
+        rotationSpeed: 0.01,
+        hasMoon: true,
+        atmosphere: true
+      },
+      {
+        name: "Mars",
+        radius: 1.34,
+        distance: 32.8,
+        color: 0xff3300,
+        texture: 'https://assets.codepen.io/127738/mars_texture.jpg',
+        bumpMap: 'https://assets.codepen.io/127738/mars_bump.jpg',
+        bumpScale: 0.2,
+        specularMap: null,
+        specular: new THREE.Color(0x111111),
+        orbitSpeed: 0.008,
+        rotationSpeed: 0.008
+      },
+      {
+        name: "Jupiter",
+        radius: 6.98,
+        distance: 87.8,
+        color: 0xffcc99,
+        texture: 'https://assets.codepen.io/127738/jupiter_texture.jpg',
+        bumpMap: null,
+        bumpScale: 0.1,
+        specularMap: null,
+        specular: new THREE.Color(0x111111),
+        orbitSpeed: 0.002,
+        rotationSpeed: 0.02
+      },
+      {
+        name: "Saturn",
+        radius: 5.82,
+        distance: 153.3,
+        color: 0xddbb88,
+        texture: 'https://assets.codepen.io/127738/saturn_texture.jpg',
+        bumpMap: null,
+        bumpScale: 0.1,
+        specularMap: null,
+        specular: new THREE.Color(0x111111),
+        orbitSpeed: 0.0009,
+        rotationSpeed: 0.018,
+        hasRings: true,
+        ringTexture: 'https://assets.codepen.io/127738/saturn_ring.png'
+      },
+      {
+        name: "Uranus",
+        radius: 2.54,
+        distance: 297.2,
+        color: 0x66ccff,
+        texture: 'https://assets.codepen.io/127738/uranus_texture.jpg',
+        bumpMap: null,
+        bumpScale: 0.1,
+        specularMap: null,
+        specular: new THREE.Color(0x111111),
+        orbitSpeed: 0.0004,
+        rotationSpeed: 0.015,
+        hasRings: true,
+        ringTexture: null
+      },
+      {
+        name: "Neptune",
+        radius: 2.46,
+        distance: 449.5,
+        color: 0x3366ff,
+        texture: 'https://assets.codepen.io/127738/neptune_texture.jpg',
+        bumpMap: null,
+        bumpScale: 0.1,
+        specularMap: null,
+        specular: new THREE.Color(0x111111),
+        orbitSpeed: 0.0001,
+        rotationSpeed: 0.016
+      }
+    ];
+
+    // Initialize the application
+    function init() {
+      // Count total assets to load (planets + stars + textures)
+      totalAssets = planetData.length + 1; // +1 for stars
+
+      // Create scene
+      scene = new THREE.Scene();
+
+      // Create camera
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.set(0, 50, 100);
+
+      // Create renderer
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.shadowMap.enabled = true;
+      document.body.appendChild(renderer.domElement);
+
+      // Add orbit controls
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+
+      // Add ambient light
+      const ambientLight = new THREE.AmbientLight(0x333333);
+      scene.add(ambientLight);
+
+      // Create stars (this counts as one asset)
+      createStars();
+
+      // Create solar system
+      createSolarSystem();
+
+      // Add event listeners
+      window.addEventListener('resize', onWindowResize);
+      document.addEventListener('mousemove', onMouseMove);
+
+      // Add speed controls
+      document.getElementById('speed-slow').addEventListener('click', () => timeSpeed = 0.1);
+      document.getElementById('speed-normal').addEventListener('click', () => timeSpeed = 10);
+      document.getElementById('speed-fast').addEventListener('click', () => timeSpeed = 50);
+      document.getElementById('speed-lightning').addEventListener('click', () => timeSpeed = 100);
+
+      // Start animation loop
+      animate();
+    }
+
+    function updateLoadingProgress() {
+      const percent = Math.round((assetsLoaded / totalAssets) * 100);
+      document.getElementById('loading-bar').style.width = percent + '%';
+      document.getElementById('loading-text').textContent = percent + '%';
+
+      if (assetsLoaded >= totalAssets) {
+        setTimeout(() => {
+          document.getElementById('loading').style.opacity = '0';
+          setTimeout(() => {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('texture-notice').style.display = 'none';
+          }, 500);
+        }, 500);
+      }
+    }
+
+    function createStars() {
+      const starsGeometry = new THREE.BufferGeometry();
+      const starsMaterial = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.5,
+        transparent: true,
+        opacity: 0.8
+      });
+
+      const starsVertices = [];
+      for (let i = 0; i < 10000; i++) {
+        const x = (Math.random() - 0.5) * 2000;
+        const y = (Math.random() - 0.5) * 2000;
+        const z = (Math.random() - 0.5) * 2000;
+        starsVertices.push(x, y, z);
+      }
+
+      starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starsVertices, 3));
+
+      const stars = new THREE.Points(starsGeometry, starsMaterial);
+      scene.add(stars);
+
+      // Count stars as loaded
+      assetsLoaded++;
+      updateLoadingProgress();
+    }
+
+    function createSolarSystem() {
+      // Create sun first (special handling)
+      const sunData = planetData[0];
+      const sunGeometry = new THREE.SphereGeometry(sunData.radius, 64, 64);
+
+      // Sun material with fallback
+      const sunMaterial = new THREE.MeshStandardMaterial({
+        color: sunData.color,
+        emissive: sunData.emissiveColor,
+        emissiveIntensity: sunData.emissiveIntensity,
+        roughness: 0.8,
+        metalness: 0.2
+      });
+
+      // Load sun texture
+      if (sunData.texture) {
+        textureLoader.load(
+          sunData.texture,
+          (texture) => {
+            sunMaterial.map = texture;
+            sunMaterial.needsUpdate = true;
+          },
+          undefined,
+          (err) => {
+            console.error('Error loading sun texture:', err);
+          }
+        );
+      }
+
+      const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+      sun.castShadow = true;
+      sun.receiveShadow = true;
+      scene.add(sun);
+
+      // Add sun light if specified
+      if (sunData.light) {
+        const sunLight = new THREE.PointLight(0xffffff, 2, 200);
+        sunLight.position.copy(sun.position);
+        scene.add(sunLight);
+      }
+
+      // Store sun reference
+      planets.push({
+        mesh: sun,
+        data: sunData,
+        angle: 0,
+        orbitRadius: 0
+      });
+
+      // Count sun as loaded
+      assetsLoaded++;
+      updateLoadingProgress();
+
+      // Create other planets
+      for (let i = 1; i < planetData.length; i++) {
+        createPlanet(planetData[i]);
+      }
+    }
+
+    function createPlanet(data) {
+      // Create geometry
+      const geometry = new THREE.SphereGeometry(data.radius, 64, 64);
+
+      // Create material with color as fallback
+      const material = new THREE.MeshStandardMaterial({
+        color: data.color,
+        roughness: 0.8,
+        metalness: 0.2,
+        specular: data.specular,
+        bumpScale: data.bumpScale
+      });
+
+      // Create mesh
+      const planet = new THREE.Mesh(geometry, material);
+      planet.castShadow = true;
+      planet.receiveShadow = true;
+
+      // Position planet
+      planet.position.x = data.distance;
+
+      // Add to scene
+      scene.add(planet);
+
+      // Store planet reference
+      const planetObj = {
+        mesh: planet,
+        data: data,
+        angle: Math.random() * Math.PI * 2,
+        orbitRadius: data.distance
+      };
+      planets.push(planetObj);
+
+      // Load textures
+      loadPlanetTextures(planetObj);
+
+      // Create rings for Saturn and Uranus
+      if (data.hasRings) {
+        const innerRadius = data.radius * 1.5;
+        const outerRadius = data.radius * 2.3;
+        const ringGeometry = new THREE.RingGeometry(innerRadius, outerRadius, 64);
+
+        const ringMaterial = new THREE.MeshStandardMaterial({
+          color: 0xddddbb,
+          side: THREE.DoubleSide,
+          roughness: 1,
+          metalness: 0,
+          transparent: true,
+          opacity: 0.8
+        });
+
+        if (data.ringTexture) {
+          textureLoader.load(
+            data.ringTexture,
+            (texture) => {
+              ringMaterial.map = texture;
+              ringMaterial.alphaMap = texture;
+              ringMaterial.transparent = true;
+              ringMaterial.needsUpdate = true;
+            },
+            undefined,
+            (err) => {
+              console.error(`Error loading ring texture for ${data.name}:`, err);
+            }
+          );
+        }
+
+        const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+        ring.rotation.x = Math.PI / 3;
+        planet.add(ring);
+      }
+
+      // Create moon for Earth
+      if (data.hasMoon) {
+        const moonGeometry = new THREE.SphereGeometry(0.17, 32, 32);
+        const moonMaterial = new THREE.MeshStandardMaterial({
+          color: 0xaaaaaa,
+          roughness: 0.8,
+          metalness: 0.1
+        });
+
+        // Load moon texture
+        textureLoader.load(
+          'https://assets.codepen.io/127738/moon_texture.jpg',
+          (texture) => {
+            moonMaterial.map = texture;
+            moonMaterial.needsUpdate = true;
+          },
+          undefined,
+          (err) => {
+            console.error('Error loading moon texture:', err);
+          }
+        );
+
+        const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+        moon.position.x = 1.5;
+        planet.add(moon);
+
+        // Store moon reference
+        planets.push({
+          mesh: moon,
+          parent: planet,
+          angle: Math.random() * Math.PI * 2,
+          orbitRadius: 5.5,
+          data: {
+            name: "Moon",
+            orbitSpeed: 0.05,
+            rotationSpeed: 0.005
+          }
+        });
+      }
+
+      // Count planet as loaded
+      assetsLoaded++;
+      updateLoadingProgress();
+    }
+
+    function loadPlanetTextures(planetObj) {
+      const data = planetObj.data;
+      const material = planetObj.mesh.material;
+
+      // Load main texture
+      if (data.texture) {
+        textureLoader.load(
+          data.texture,
+          (texture) => {
+            material.map = texture;
+            material.needsUpdate = true;
+          },
+          undefined,
+          (err) => {
+            console.error(`Error loading texture for ${data.name}:`, err);
+          }
+        );
+      }
+
+      // Load bump map
+      if (data.bumpMap) {
+        textureLoader.load(
+          data.bumpMap,
+          (texture) => {
+            material.bumpMap = texture;
+            material.needsUpdate = true;
+          },
+          undefined,
+          (err) => {
+            console.error(`Error loading bump map for ${data.name}:`, err);
+          }
+        );
+      }
+
+      // Load specular map
+      if (data.specularMap) {
+        textureLoader.load(
+          data.specularMap,
+          (texture) => {
+            material.specularMap = texture;
+            material.needsUpdate = true;
+          },
+          undefined,
+          (err) => {
+            console.error(`Error loading specular map for ${data.name}:`, err);
+          }
+        );
+      }
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const delta = clock.getDelta() * timeSpeed;
+
+      // Update planets
+      planets.forEach(planet => {
+        if (planet.data.orbitSpeed) {
+          // Update orbit position
+          planet.angle += planet.data.orbitSpeed * delta;
+          if (planet.parent) {
+            // Moon - orbit around parent planet
+            planet.mesh.position.x = Math.cos(planet.angle) * planet.orbitRadius;
+            planet.mesh.position.z = Math.sin(planet.angle) * planet.orbitRadius;
+          } else if (planet.data.distance > 0) {
+            // Planet - orbit around sun
+            planet.mesh.position.x = Math.cos(planet.angle) * planet.orbitRadius;
+            planet.mesh.position.z = Math.sin(planet.angle) * planet.orbitRadius;
+          }
+        }
+
+        // Rotate planet
+        if (planet.data.rotationSpeed) {
+          planet.mesh.rotation.y += planet.data.rotationSpeed * delta;
+        }
+      });
+
+      // Update controls
+      controls.update();
+
+      // Render scene
+      renderer.render(scene, camera);
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function onMouseMove(event) {
+      // Calculate mouse position in normalized device coordinates
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+      // Update the raycaster
+      raycaster.setFromCamera(mouse, camera);
+
+      // Calculate objects intersecting the picking ray
+      const intersects = raycaster.intersectObjects(planets.map(p => p.mesh));
+
+      if (intersects.length > 0) {
+        const object = intersects[0].object;
+
+        // Find which planet this object belongs to
+        const planetInfo = planets.find(p => p.mesh === object ||
+          (p.parent && p.mesh === object));
+
+        if (planetInfo && planetInfo !== hoveredObject) {
+          hoveredObject = planetInfo;
+          document.getElementById('planet-info').textContent = planetInfo.data.name;
+        }
+      } else if (hoveredObject) {
+        hoveredObject = null;
+        document.getElementById('planet-info').textContent = "";
+      }
+    }
+
+    // Start the application
+    init();
+  </script>
+</body>
+
+</html>

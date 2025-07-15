@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Color Scheme</title>
+
+    <style>
+        body {
+            padding: 0px;
+            margin: 0px;
+        }
+        .container{
+            display: flex;
+            justify-content:space-around;
+            align-items: center;
+            align-content: center;
+            width: 100%;
+            height: 100vh;
+        }
+        .button{
+            border: 2px solid;
+            width: 20%;
+            height: 200px;
+        }
+        #red{
+            background-color: red;
+        }
+        #blue{
+            background-color: blue;
+        }
+        #pink{
+            background-color: pink;
+        }
+        #green{
+            background-color: green;
+        }
+        #orange{
+            background-color: orange;
+        }
+    </style>
+</head>
+<body>
+    <h2>Change Color Scheme</h2>
+    <div class="container">
+        <span class="button" id="red"></span>
+        <span class="button" id="blue"></span>
+        <span class="button" id="pink"></span>
+        <span class="button" id="green"></span>
+        <span class="button" id="orange"></span>
+        <span class="button" id="purple"></span>
+    </div>
+    <!-- <script src="Project1.js"></script> -->
+    <script>
+        const btn = document.querySelectorAll(".button");
+const bdy = document.querySelector("body");
+console.log(btn);
+btn.forEach((buttn) => {
+    buttn.addEventListener("click", (e) => {
+        if (e.target.id === "red") {
+            bdy.style.backgroundColor = e.target.id;
+        }
+        if (e.target.id === "blue") {
+            bdy.style.backgroundColor = e.target.id;
+        }
+        if (e.target.id === "pink") {
+            bdy.style.backgroundColor = e.target.id;
+        }
+        if (e.target.id === "green") {
+            bdy.style.backgroundColor = e.target.id;
+        }
+        if (e.target.id === "orange") {
+            bdy.style.backgroundColor = e.target.id;
+        }
+        if (e.target.id === "purple") {
+            bdy.style.backgroundColor = e.target.id;
+            alert(`you Have Clicked on ${e.target.id} color`)
+            
+        }
+    })
+})
+    </script>
+</body>
+</html>

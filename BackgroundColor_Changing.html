@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Background Color Change Project</title>
+</head>
+
+<body style="background-color: darkslategray; color:aliceblue">
+    <h2>background-color Changing Projects</h2>
+    <button id="btn1">Start</button>
+    <button id="btn2">Stop</button>
+</body>
+<script>
+    // Get the buttons
+    let Start = document.querySelector('#btn1');
+    let Stop = document.querySelector('#btn2');
+
+    let RandomColor = function () {
+        let hex = '0123456789ABCDEF';
+        let color = '#';
+        for (i = 0; i < 6; i++) {
+            color += hex[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    };
+
+    let intervalId;
+    let StartMagic = function () {
+        if(!intervalId){                               // if Statement is used to optimised code. we can direct execute without if statement
+            intervalId = setInterval(startColor, 1000)
+        }
+        function startColor () {
+            document.body.style.backgroundColor = RandomColor();
+        }
+    };
+    let stopColor = function () {
+        clearInterval(intervalId)
+        intervalId = null;                     // to optimised code
+    }
+    Start.addEventListener('click', StartMagic)
+    Stop.addEventListener('click', stopColor);
+
+</script>
+
+</html>

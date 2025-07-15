@@ -1,0 +1,128 @@
+body {
+  margin: 0;
+  font-family: 'Comic Sans MS', cursive;
+  background: radial-gradient(circle, #000428, #004e92);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.container {
+  text-align: center;
+}
+
+form {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 30px;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+}
+
+input, button {
+  display: block;
+  width: 220px;
+  padding: 10px;
+  margin: 10px auto;
+  border: none;
+  border-radius: 10px;
+}
+
+button {
+  background: #3fffa0;
+  font-weight: bold;
+  color: #000;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.alien-wrapper {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.alien {
+  width: 150px;
+  height: 150px;
+  background: #99ffcc;
+  border-radius: 50%;
+  margin: auto;
+  position: relative;
+  animation: float 2s ease-in-out infinite;
+  transition: all 1s ease;
+}
+
+.eye {
+  width: 20px;
+  height: 20px;
+  background: black;
+  border-radius: 50%;
+  position: absolute;
+  top: 40px;
+  transition: transform 0.1s;
+}
+
+.left-eye {
+  left: 35px;
+}
+
+.right-eye {
+  right: 35px;
+}
+
+.nose {
+  width: 10px;
+  height: 10px;
+  background: red;
+  border-radius: 50%;
+  position: absolute;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.mouth {
+  width: 40px;
+  height: 10px;
+  background: #222;
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+ 
+
+@keyframes wave {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(20deg); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(10deg); }
+  75% { transform: rotate(-10deg); }
+}
+
+#universeCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: none !important;
+  z-index: 0;
+}
+#loginContainer {
+  position: relative;
+  z-index: 2;
+}
+

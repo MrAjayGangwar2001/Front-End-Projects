@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock Paper Scissors Game Project</title>
+    <style>
+        body {
+            margin-top: 10px;
+            background-color: darkslategrey;
+            position: absolute;
+            left: 50%;
+            top: 40%;
+            transform: translate(-50%, -40%);
+            text-align: center;
+
+        }
+
+        #main {
+            height: 300px;
+            width: 300px;
+            background-color: teal;
+            border: 2px solid red;
+            text-align:center;
+            color:aliceblue;
+            font-weight: 600;
+            font-size: larger;
+        }
+
+        .btn {
+            margin: 20px;
+            padding: 10px;
+            text-align: center;
+            background-color: coral;
+            color: black;
+            border-radius: 15%;
+        }
+        #result{
+            text-align: center;
+            font-size: x-large;
+            margin:70px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="main">
+        <p id="para"></p>
+        <p id="para2"></p>
+        <h3 id="result"></h3>
+    </div>
+    <button class="btn" id="Rock">Rock</button>
+    <button class="btn" id="Paper">Paper</button>
+    <button class="btn" id="Scissor">Scissor</button>
+</body>
+<script>
+    let Button = document.querySelectorAll('.btn');
+    let Main = document.getElementById('para');
+    let Main2 = document.getElementById('para2');
+    let Result = document.getElementById('result');
+    let playerChoice = " ";
+    Button.forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+            playerChoice = btn.id;
+            console.log("You Chose : ",playerChoice)
+
+            Main.textContent = "You Chose : " + playerChoice;
+            
+            let Choice = ['Rock', 'Paper', 'Scissor'];
+            let CompChoice = Choice[parseInt(Math.random() * 3)];
+            Main2.textContent = "Computer Chose : " + CompChoice;
+            console.log(CompChoice)
+
+            function Message(msg) {
+                Result.textContent = `${msg}`;
+                Result.style.color = 'yellow';
+            }
+
+            if (playerChoice === CompChoice) {
+                Message('Match Draw ! 🤝 ')
+                console.log("Match Tie")
+            } else if (
+                (playerChoice === 'Rock' && CompChoice === 'Scissor') ||
+                (playerChoice === 'Paper' && CompChoice === 'Rock') ||
+                (playerChoice === 'Scissor' && CompChoice === 'Paper')
+            ) {
+                Message('You Win 🎊🎉');
+                console.log("you win")
+            } else {
+                Message('Computer Win 😜😂😂😂');
+                console.log("computer win")
+            }
+        })
+    })
+
+</script>
+
+</html>

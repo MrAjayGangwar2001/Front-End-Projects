@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM KeyPress INfo</title>
+    <style>
+        body{
+            margin: 0px;
+            padding: 0px;
+            
+            position:absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+
+        }
+    </style>
+</head>
+<body style= "background-color:darkslategray; color:white;">
+    <div class="insert">
+        <div class="msg">Press Any Keyboard Key</div>
+    </div>
+</body>
+<script>
+    let Insert = document.querySelector('.insert');
+    window.addEventListener('keyup',(e) =>{
+        Insert.innerHTML = `
+        <div class='table' >
+            <table   style="border:2px solid blue;">
+                <tr>
+                    <th>Key</th>
+                    <th>KeyCode</th>
+                    <th>Code</th>
+                </tr>
+                <tr>
+                    <td>${e.key == ' ' ? "space" : e.key}</td>
+                    <td>${e.keyCode}</td>
+                    <td>${e.code}</td>
+                </tr>
+            </table>
+        </div>
+        `;
+    })
+</script>
+</html>

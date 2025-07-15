@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 4 DOM Guess Number</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0px;
+            padding: 0px;
+            background-color: darkslategrey;
+            color: aliceblue;
+            position: absolute;
+            left: 50%;
+            top: 45%;
+            transform: translate(-50%, -50%);
+        }
+
+        .container {
+            text-align: center;
+            height: 65vh;
+            width: 70vh;
+            align-content: center;
+
+        }
+
+        .all {
+            margin: 10px;
+            padding: 10px;
+        }
+
+        #sbmt {
+            height: auto;
+            width: 20vh;
+        }
+
+        h2 {
+            color: yellowgreen
+        }
+
+        input {
+            text-align: center;
+            background-color:cadetblue;
+            color: darkblue;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1> Guess Any Number : </h1>
+        <p>You Have <span id="top">10</span> Attempt to Guess Right Number.</p>
+        <form>
+            <input type="number" name="input" class="all" id="inpt" required /><br>
+            <input type="submit" name="input" class="all" id="sbmt" />
+        </form>
+        <div class="history">
+            <div id="pg" class="all">Previous Guesses : <span id="pgnum"></span> </div>
+            <div id="gr" class="all">Guesses Remaining : <span id="rgnum">10</span> </div>
+            <p id="para"></p>
+        </div>
+    </div>
+
+    <!-- <script src="Project.js"></script> -->
+
+    <script>
+
+        // const RdmNum = Math.floor(Math.random() * 100) + 1;
+let RdmNum = parseInt(Math.random() * 100) + 1;
+// console.log(RdmNum);
+
+
+let Input = document.querySelector("#inpt");
+let Submit = document.querySelector("#sbmt");
+let PGuess = document.querySelector("#pgnum");
+let GRemain = document.querySelector("#rgnum");
+let Result = document.querySelector(".history");
+let msgBox = document.querySelector("#para");
+let TopGuessNum = document.querySelector("#top");
+
+let p = document.createElement("p");
+let prevGuess = [];
+let RemainGuess = 10;
+//let RemainGuess = 0;
+let playGame = true;
+
+if (playGame) {
+    console.log("This is play button");
+    Submit.addEventListener("click", (e) => {
+        e.preventDefault();
+    let guess = parseInt(Input.value);
+    ValidateGuess(guess);
+  });
+}
+
+function ValidateGuess(guess) {
+    if(isNaN(guess)){
+        alert("Please Enter a Number !");
+    } else if (guess < 1) {
+    alert("Please Enter a Number from 1 !");
+  } else if (guess > 100) {
+    alert("Please Enter Number Between 1 to 100 !");
+  } else {
+    prevGuess.push(guess);
+    if (RemainGuess === 1) {
+      DisplayGuess(guess);
+      Displaymssg(
+        `Game Over ! You have used all your guesses ! Random Number was ${RdmNum}`
+      );
+      EndGame();
+    } else {
+      DisplayGuess(guess);
+      CheckGuess(guess);
+    }
+  }
+}
+
+function CheckGuess(guess) {
+  if (guess == RdmNum) {
+    Displaymssg("Congratulation!🎉🎊 Your Guess is Correct !");
+    EndGame();
+  } else if (guess < RdmNum) {
+    Displaymssg("Number is Lower !");
+  } else if (guess > RdmNum) {
+    Displaymssg("Number is Higher !");
+  }
+}
+
+function DisplayGuess(guess) {
+  Input.value = "";
+  PGuess.innerHTML = `${prevGuess.join(", ")}`;
+  RemainGuess--;
+  // GRemain.innerHTML = `${10 - RemainGuess}`;
+   GRemain.innerHTML = `${RemainGuess}`;
+   TopGuessNum.innerHTML = `${RemainGuess}`;
+}
+
+function Displaymssg(msg) {
+//  let msgBox = document.createElement("p");
+  msgBox.innerHTML = `<h2>${msg}</h2>`;
+  msgBox.style.color = "red";
+  msgBox.appendChild(p);
+}
+
+function EndGame() {
+  Input.value = "";
+  Input.disabled = true;
+  Input.setAttribute("disabled", "");
+  Submit.setAttribute("disabled", "");
+  p.classList.add("button");
+  p.innerHTML = `<h2 id="newgame">Start New Game </h2>`;
+  Result.appendChild(p);
+  playGame = false;
+  NewGame();
+}
+
+function NewGame() {
+  let NewGame = document.querySelector("#newgame");
+  NewGame.addEventListener("click", function (e) {
+    let RdmNum = parseInt(Math.random() * 100) + 1;
+    prevGuess = [];
+    RemainGuess = 10;
+    GRemain.innerHTML = `${RemainGuess}`;
+    TopGuessNum.innerHTML = `${RemainGuess}`;
+    Input.removeAttribute("disabled");
+    Submit.removeAttribute("disabled");
+    Input.value = "";
+    Result.removeChild(p);
+    playGame = true;
+  });
+}
+
+    </script>
+
+</body>
+
+</html>

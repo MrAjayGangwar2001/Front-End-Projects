@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 3 DOM Manipulation</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0px;
+            padding: 0px;
+            height: 100vh;
+            text-decoration: none;
+            background-color: black;
+            color: aliceblue;
+            display: flex;
+            justify-content: center;
+            /* Horizontal center */
+            align-items: center;
+        }
+
+
+        #time {
+            height: 10vh;
+            width: 30vh;
+            border-radius: 6px;
+            border: none;
+            background-color: darkblue;
+            color: aliceblue;
+            font-size: larger;
+            font-weight: 600;
+        }
+
+        #time.samay:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <div class="time"></div> -->
+    <button id="time" class="samay"></button>
+
+    <script>
+        const clock = document.querySelector("#time");
+
+        setInterval(() => {
+            let time = new Date();
+            clock.innerHTML = time.toLocaleTimeString();
+
+        }, 1000)
+    </script>
+
+</body>
+
+</html>
